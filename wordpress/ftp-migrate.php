@@ -42,7 +42,7 @@
     die ('Missing wp-config.php' . "\n");
   
   function get_constant ($Config, $Name) {
-    preg_match ('/[^; 	]define[ 	]*\(\'' . $Name . '\'[ 	]*,[ 	]*[\'"](.*)[\'"]\)[ 	]*;/', $Config, $m);
+    preg_match ('/[^; 	]*define[ 	]*\([ 	]*\'' . $Name . '\'[ 	]*,[ 	]*[\'"](.*)[\'"][ 	]*\)/', $Config, $m);
     
     return $m [1];
   }
@@ -55,9 +55,12 @@
   $dbName = get_constant ($Config, 'DB_NAME');
   
   // Import MySQL-Databaase
-  $Parameters [0] = escapeshellarg (dirname (dirname (__FILE__)) . '/hybrid-dump/hybrid-dump.php');
-  $Parameters [2] = escapeshellarg ('mysql://' . $dbUser . ':' . $dbPass . '@' . $dbHost . '/' . $dbName);
-  $Parameters [] = escapeshellarg ($Info ['remote']['http.url']);
+  $Parameters = array (
+    escapeshellarg (dirname (dirname (__FILE__)) . '/hybrid-dump/hybrid-dump.php'),
+    escapeshellarg ('ftp://' . (isset ($Info ['remote']['ftp.user']) ? $Info ['remote']['ftp.user'] . ':' .  $Info ['remote']['ftp.pass'] : '') . '@' .  $Info ['remote']['ftp.host'] . (isset ($Info ['remote']['ftp.port']) ? ':' . $Info ['remote']['ftp.port'] : '') . $Info ['remote']['ftp.path']),
+    escapeshellarg ('mysql://' . $dbUser . ':' . $dbPass . '@' . $dbHost . '/' . $dbName),
+    escapeshellarg ($Info ['remote']['http.url']),
+  );
   
   if (!$haveUTF8mb4) {
     $Parameters [] = '| replace utf8mb4_unicode_520_ci utf8_unicode_ci';
@@ -70,7 +73,10 @@
   $Parameters [] = escapeshellarg ('-p' . $Info ['local']['mysql.pass']);
   $Parameters [] = escapeshellarg ($Info ['local']['mysql.db']);
   
-  system ('php ' . implode (' ', $Parameters));
+  system ('php ' . implode (' ', $Parameters), $rc);
+  
+  if ($rc != 0)
+    die ('There was an error during database-import' . "\n");
   
   // Rewrite wp-config.php
   function set_constant (&$Config, $Name, $Value) {
