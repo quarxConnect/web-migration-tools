@@ -6,9 +6,14 @@
 
   require_once (dirname (__FILE__) . '/../lib/ftpList.php');
 
-  // Read site.ini
-  if (($Info = parse_ini_file ('site.ini', true)) === false)
-    die ('Invalid site.ini' . "\n");
+  // Read configuration
+  if ($argc > 1)
+    $Configfile = $argv [1];
+  else
+    $Configfile = 'site.ini';
+  
+  if (($Info = parse_ini_file ($Configfile, true)) === false)
+    die ('Failed to read configuration (site.ini by default)' . "\n");
   
   // Prepare MySQL-Connection
   $db = new mysqli ($Info ['local']['mysql.host'], $Info ['local']['mysql.user'], $Info ['local']['mysql.pass'], $Info ['local']['mysql.db']);
