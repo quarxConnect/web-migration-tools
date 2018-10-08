@@ -8,8 +8,45 @@
   ini_set ('display_errors', 'stderr');
   
   // Parse arguements
-  if ($argc < 4)
-    die ('Error: Too few arguements. Plaese use this like ' . $argv [0] . ' ftp://username:password@host/path/ mysql://username:password@host/db http://[username[:password]@]host/path/' . "\n");
+  if ($argc < 4) {
+    // Check for configuration-file
+    if (($argc != 2) || !is_file ($argv [1]))
+      die ('Error: Too few arguements. Plaese use this like ' . $argv [0] . ' ftp://username:password@host/path/ mysql://username:password@host/db http://[username[:password]@]host/path/' . "\n");
+    
+    // Try to read config-file
+    if (($Info = parse_ini_file ($argv [1], true)) === false)
+      die ('Error: Failed to read configuration-file' . "\n");
+    
+    if (!isset ($Info ['remote']))
+      die ('Error: No remote-section on configuration' . "\n");
+    
+    if (!isset ($Info ['remote']['ftp.host']))
+      die ('Error: No ftp.host on remote-section' . "\n");
+    
+    if (!isset ($Info ['remote']['mysql.host']))
+      die ('Error: Missing mysql.host on remote-section' . "\n");
+    
+    if (!isset ($Info ['remote']['mysql.db']))
+          die ('Error: Missing mysql.db on remote-section' . "\n");
+    
+    if (!isset ($Info ['remote']['http.url']))
+      die ('Error: Missing http.url on remote-section' . "\n");
+    
+    // Rewrite command-line
+    $argv [1] =
+      'ftp://' .
+      (isset ($Info ['remote']['ftp.user']) ? $Info ['remote']['ftp.user'] . (isset ($Info ['remote']['ftp.pass']) ? ':' .  $Info ['remote']['ftp.pass'] : '') . '@' : '') .
+      $Info ['remote']['ftp.host'] . (isset ($Info ['remote']['ftp.port']) ? ':' . $Info ['remote']['ftp.port'] : '') .
+      (isset ($Info ['remote']['ftp.path']) ? $Info ['remote']['ftp.path'] : '/');
+    
+    $argv [2] =
+      'mysql://' .
+      (isset ($Info ['remote']['mysql.user']) ? $Info ['remote']['mysql.user'] . (isset ($Info ['remote']['mysql.pass']) ? ':' .  $Info ['remote']['mysql.pass'] : '') . '@' : '') .
+      $Info ['remote']['mysql.host'] . (isset ($Info ['remote']['mysql.port']) ? ':' . $Info ['remote']['mysql.port'] : '') .
+      '/' . $Info ['remote']['mysql.db'];
+    
+    $argv [3] = $Info ['remote']['http.url'];
+  }
         
   if (!($info = parse_url ($argv [1])))
     die ('Error: Failed to parse FTP-URL' . "\n");

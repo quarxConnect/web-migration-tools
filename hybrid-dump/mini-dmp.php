@@ -78,7 +78,9 @@
   }
   
   // Connect to server
-  $db = mysqli_connect ($Host, $User, $Pass);
+  if (!is_object ($db = mysqli_connect ($Host, $User, $Pass)))
+    die ('/* Failed to connect to database */' . "\n");
+  
   $db->set_charset ('utf8');
   $db->select_db ($DB);
   
