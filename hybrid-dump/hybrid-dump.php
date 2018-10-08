@@ -1,36 +1,42 @@
 <?PHP
 
-  // Make sure the FTP-Extension was loaded  
-  if (!extension_loaded ('ftp'))
-    die ('Error: Missing FTP-Extension' . "\n");
-  
   // Redirect error-output
   ini_set ('display_errors', 'stderr');
+  
+  function err ($msg, $rc = 1) {
+    trigger_error ($msg, E_USER_ERROR);
+    
+    exit ($rc);
+  }
+  
+  // Make sure the FTP-Extension was loaded  
+  if (!extension_loaded ('ftp'))
+    err ('Missing FTP-Extension');
   
   // Parse arguements
   if ($argc < 4) {
     // Check for configuration-file
     if (($argc != 2) || !is_file ($argv [1]))
-      die ('Error: Too few arguements. Plaese use this like ' . $argv [0] . ' ftp://username:password@host/path/ mysql://username:password@host/db http://[username[:password]@]host/path/' . "\n");
+      err ('Too few arguements. Plaese use this like ' . $argv [0] . ' ftp://username:password@host/path/ mysql://username:password@host/db http://[username[:password]@]host/path/' . "\n");
     
     // Try to read config-file
     if (($Info = parse_ini_file ($argv [1], true)) === false)
-      die ('Error: Failed to read configuration-file' . "\n");
+      err ('Failed to read configuration-file' . "\n");
     
     if (!isset ($Info ['remote']))
-      die ('Error: No remote-section on configuration' . "\n");
+      err ('No remote-section on configuration' . "\n");
     
     if (!isset ($Info ['remote']['ftp.host']))
-      die ('Error: No ftp.host on remote-section' . "\n");
+      err ('No ftp.host on remote-section' . "\n");
     
     if (!isset ($Info ['remote']['mysql.host']))
-      die ('Error: Missing mysql.host on remote-section' . "\n");
+      err ('Missing mysql.host on remote-section' . "\n");
     
     if (!isset ($Info ['remote']['mysql.db']))
-          die ('Error: Missing mysql.db on remote-section' . "\n");
+      err ('Missing mysql.db on remote-section' . "\n");
     
     if (!isset ($Info ['remote']['http.url']))
-      die ('Error: Missing http.url on remote-section' . "\n");
+      err ('Missing http.url on remote-section' . "\n");
     
     // Rewrite command-line
     $argv [1] =
@@ -49,21 +55,21 @@
   }
         
   if (!($info = parse_url ($argv [1])))
-    die ('Error: Failed to parse FTP-URL' . "\n");
+    err ('Failed to parse FTP-URL' . "\n");
   
   if (!($minfo = parse_url ($argv [2])))
-    die ('Error: Failed to parse MySQL-URL' . "\n");
+    err ('Failed to parse MySQL-URL' . "\n");
   
   if (!($hinfo = parse_url ($argv [3])))
-    die ('Error: Failed to parse HTTP-URL' . "\n");
+    err ('Failed to parse HTTP-URL' . "\n");
   
   // Check if there is an ftp-scheme on the URL
   if (isset ($info ['scheme']) && ($info ['scheme'] != 'ftp'))
-    die ('Error: URL-Scheme has to be ftp' . "\n");
+    err ('URL-Scheme has to be ftp' . "\n");
   
   // Try to connect to host
   if (!is_resource ($conn = ftp_connect ($info ['host'], isset ($info ['port']) ? intval ($info ['port']) : 21)))
-    die ('Error: Could not establish FTP-Connection' . "\n");
+    err ('Could not establish FTP-Connection' . "\n");
 
   // Authenticate
   if (isset ($info ['user'])) {
@@ -75,7 +81,7 @@
   }
    
   if (!ftp_login ($conn, $user, $pass))
-    die ('Error: Login on FTP-Server failed' . "\n");
+    err ('Login on FTP-Server failed' . "\n");
   
   // Enable passive mode
   if (!ftp_pasv ($conn, true))
@@ -85,10 +91,10 @@
   $path = $info ['path'];
 
   if (!ftp_chdir ($conn, $path))
-    die ('Error: Given path is invalid' . "\n");
+    err ('Given path is invalid' . "\n");
   
   if (!ftp_put ($conn, $path . '/mini-dmp-' . getmypid () . '.php', dirname (__FILE__) . '/mini-dmp.php', FTP_BINARY))
-    die ('Error: Could not upload mini-dumper' . "\n");
+    err ('Could not upload mini-dumper' . "\n");
   
   $http = $argv [3];
   
