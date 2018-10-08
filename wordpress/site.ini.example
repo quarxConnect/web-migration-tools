@@ -3,11 +3,20 @@ ftp.host = ftp.example.com
 ftp.user = example
 ftp.pass = example
 ftp.path = /example
-http.url = www.example.com
+
+http.url = http://www.example.com
+
+; Used by hybrid-dump.php:
+mysql.host = 127.0.0.1
+mysql.user = example
+mysql.pass = example
+mysql.db = example
 
 [local]
 path = /srv/web/example.net
-http.url = www.example.net
+
+http.url = https://www.example.net
+
 mysql.host = 127.0.0.1
 mysql.user = example
 mysql.pass = example
