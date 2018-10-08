@@ -19,7 +19,7 @@
       die ('Error: No remote-section on configuration' . "\n");
     
     if (!isset ($Info ['remote']['ftp.host']))
-      die ('Error: No ftp.host on remove-section' . "\n");
+      die ('Error: No ftp.host on remote-section' . "\n");
     
     // Rewrite the argument
     $argv [1] =
