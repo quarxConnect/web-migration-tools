@@ -15,6 +15,8 @@
   if (($Info = parse_ini_file ($Configfile, true)) === false)
     die ('Failed to read configuration (site.ini by default)' . "\n");
   
+  $Configfile = realpath ($Configfile);
+  
   // Prepare MySQL-Connection
   $db = new mysqli ($Info ['local']['mysql.host'], $Info ['local']['mysql.user'], $Info ['local']['mysql.pass'], $Info ['local']['mysql.db']);
   
@@ -27,11 +29,13 @@
   // Mirror all files from FTP
   $Parameters = array (
     escapeshellarg (dirname (dirname (__FILE__)) . '/ftp/ftp-mirror.php'),
-    escapeshellarg ('ftp://' . (isset ($Info ['remote']['ftp.user']) ? $Info ['remote']['ftp.user'] . ':' .  $Info ['remote']['ftp.pass'] : '') . '@' .  $Info ['remote']['ftp.host'] . (isset ($Info ['remote']['ftp.port']) ? ':' . $Info ['remote']['ftp.port'] : '') . $Info ['remote']['ftp.path']),
-    escapeshellarg ($Info ['local']['path']),
+    escapeshellarg ($Configfile),
   );
   
-  system ('php ' . implode (' ', $Parameters));
+  system ('php ' . implode (' ', $Parameters), $rc);
+  
+  if ($rc != 0)
+    die ('Failed to mirror files via FTP' . "\n");
   
   // Read MySQL-Configuration
   if (!is_file ($Info ['local']['path'] . '/wp-config.php'))
