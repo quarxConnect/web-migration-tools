@@ -18,18 +18,25 @@
     if (!isset ($Info ['remote']))
       die ('Error: No remote-section on configuration' . "\n");
     
+    if (!isset ($Info ['local']))
+      die ('Error: No local-section on configuration' . "\n");
+    
     if (!isset ($Info ['remote']['ftp.host']))
       die ('Error: No ftp.host on remote-section' . "\n");
     
-    // Rewrite the argument
+    if (!isset ($Info ['local']['path']))
+      die ('Error: No local path on configuration' . "\n");
+    
+    // Rewrite the arguments
     $argv [1] =
       'ftp://' .
       (isset ($Info ['remote']['ftp.user']) ? $Info ['remote']['ftp.user'] . (isset ($Info ['remote']['ftp.pass']) ? ':' .  $Info ['remote']['ftp.pass'] : '') . '@' : '') .
       $Info ['remote']['ftp.host'] . (isset ($Info ['remote']['ftp.port']) ? ':' . $Info ['remote']['ftp.port'] : '') .
       (isset ($Info ['remote']['ftp.path']) ? $Info ['remote']['ftp.path'] : '/');
     
-    if (!isset ($Info ['local']))
-      $Info ['local'] = array ();
+    $argv [2] = $Info ['local']['path'];
+    
+    $argc = count ($argv);
   } else
     $Info = array ('local' => array ());
   
