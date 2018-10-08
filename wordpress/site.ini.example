@@ -21,3 +21,7 @@ mysql.host = 127.0.0.1
 mysql.user = example
 mysql.pass = example
 mysql.db = example
+
+; Used by hybrid-dump.php:
+user = user
+group = users

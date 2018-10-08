@@ -27,7 +27,11 @@
       (isset ($Info ['remote']['ftp.user']) ? $Info ['remote']['ftp.user'] . (isset ($Info ['remote']['ftp.pass']) ? ':' .  $Info ['remote']['ftp.pass'] : '') . '@' : '') .
       $Info ['remote']['ftp.host'] . (isset ($Info ['remote']['ftp.port']) ? ':' . $Info ['remote']['ftp.port'] : '') .
       (isset ($Info ['remote']['ftp.path']) ? $Info ['remote']['ftp.path'] : '/');
-  }
+    
+    if (!isset ($Info ['local']))
+      $Info ['local'] = array ();
+  } else
+    $Info = array ('local' => array ());
   
   if (!($info = parse_url ($argv [1])))
     die ('Error: Failed to parse FTP-URL' . "\n");
@@ -129,10 +133,14 @@
     }
     
     // Set local meta-data
-    if ($file ['user'] !== null)
+    if (isset ($Info ['local']['user']))
+      @chown ($lf, $Info ['local']['user']);
+    elseif ($file ['user'] !== null)
       @chown ($lf, $file ['user']);
     
-    if ($file ['group'] !== null)
+    if (isset ($Info ['local']['group']))
+      @chgrp ($lf, $Info ['local']['group']);
+    elseif ($file ['group'] !== null)
       @chgrp ($lf, $file ['group']);
     
     if ($file ['mode'] !== null)
