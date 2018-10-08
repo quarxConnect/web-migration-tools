@@ -8,7 +8,26 @@
   
   // Parse arguements
   if ($argc < 2)
-    die ('Error: Too few arguements. Plaese use this like ' . $argv [0] . ' ftp://username:password@host/path/' . "\n");
+    die ('Error: Too few arguements. Plaese use this like ' . $argv [0] . ' [ftp://username:password@host/path/|path-to-config]' . "\n");
+  
+  if ((strpos ($argv [1], '://') === false) && is_file ($argv [1])) {
+    // Try to read config-file
+    if (($Info = parse_ini_file ($argv [1], true)) === false)
+      die ('Error: Failed to read configuration-file' . "\n");
+    
+    if (!isset ($Info ['remote']))
+      die ('Error: No remote-section on configuration' . "\n");
+    
+    if (!isset ($Info ['remote']['ftp.host']))
+      die ('Error: No ftp.host on remove-section' . "\n");
+    
+    // Rewrite the argument
+    $argv [1] =
+      'ftp://' .
+      (isset ($Info ['remote']['ftp.user']) ? $Info ['remote']['ftp.user'] . (isset ($Info ['remote']['ftp.pass']) ? ':' .  $Info ['remote']['ftp.pass'] : '') . '@' : '') .
+      $Info ['remote']['ftp.host'] . (isset ($Info ['remote']['ftp.port']) ? ':' . $Info ['remote']['ftp.port'] : '') .
+      (isset ($Info ['remote']['ftp.path']) ? $Info ['remote']['ftp.path'] : '/');
+  }
   
   if (!($info = parse_url ($argv [1])))
     die ('Error: Failed to parse FTP-URL' . "\n");

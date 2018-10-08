@@ -2,8 +2,11 @@
 
   function ftpList ($conn, $path, $pathPrepend = false) {
     // Retrive raw listing
-    if (!($list = ftp_rawlist ($conn, $path)))
-      return false;
+    if (!($list = ftp_rawlist ($conn, $path))) {
+      trigger_error ('Could not get ftp-list of ' . $path);
+      
+      return array ();
+    }
     
     if ($pathPrepend && (substr ($path, -1, 1) != '/'))
       $path .= '/';
